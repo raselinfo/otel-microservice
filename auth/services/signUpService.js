@@ -3,7 +3,14 @@ const prisma = require("../utils/prisma");
 const Password = require("../utils/Password");
 const config = require("../config/config");
 
-const { trace, SpanStatusCode } = require("@opentelemetry/api");
+const { httpContextPropagation } = require("../utils/otel");
+
+const {
+  trace,
+  SpanStatusCode,
+  context,
+  propagation,
+} = require("@opentelemetry/api");
 
 const ENUM = require("../utils/enum");
 const {
@@ -22,11 +29,18 @@ const {
  * @returns {Object} - The user details.
  * @throws {Error} - If name, email, or password is missing or if the email already exists.
  */
-const signUpService = async ({ name, email, password }) => {
+const signUpService = async (
+  { name, email, password },
+  parentSpan,
+  carrier
+) => {
   const error = new Error();
   if (!name || !email || !password) {
     error.message = "Name, Email and Password is required!";
     error.status = 400;
+
+    // newSpan.recordException(error);
+    // newSpan.setStatus({ code: SpanStatusCode.ERROR });
 
     throw error;
   }
@@ -36,12 +50,22 @@ const signUpService = async ({ name, email, password }) => {
     `${config.user_service_url}/users/email/${email}`
   );
 
-  console.log("hello", existingUser?.data);
+  console.log("existingUser 🍳", existingUser.data.user);
+  // const existingUser = await context.with(
+  //   trace.setSpan(context.active(), parentSpan),
+  //   async () => {
+  //     const carrier = {};
+  //     propagation.inject(context.active(), carrier);
+
+  //     return axios.get(`${config.user_service_url}/users/email/${email}`);
+  //   }
+  // );
 
   if (existingUser?.data?.user) {
     error.message = "Email already exists!";
     error.status = 409;
-
+    // newSpan.recordException(error);
+    // newSpan.setStatus({ code: SpanStatusCode.ERROR });
     throw error;
   }
 
@@ -79,10 +103,13 @@ const signUpService = async ({ name, email, password }) => {
     verificationCode: verificationTable.verificationCode,
   });
 
+  console.log("nueUser", newUser);
+
+  // newSpan.end();
   return {
     user_id: createdUser.data.user.id,
-    name: newUser.username,
-    email: newUser.email,
+    name: createdUser.data.user.name,
+    email: createdUser.data.user.email,
   };
 };
 

@@ -1,25 +1,17 @@
-const config = require("./config/config");
 const tracer = require("./tracer");
 // Initialize the tracer
 const { sdk } = tracer("auth-service");
-const opentelemetry = require("@opentelemetry/api");
 
-const prisma = require("./utils/prisma");
-
-
+const config = require("./config/config");
 
 const app = require("./app");
 const PORT = config.port || 4000;
-
-
- prisma.user.findMany().then(data=> console.log("user",data[0]));
-
 
 const server = app.listen(PORT, () => {
   console.log(`Server is running : http://localhost:${PORT}`);
 });
 
-// TODO: Graceful shutdown of the server
+// TODO: Shutdown the server gracefully
 const graceFullShutdown = async (signal) => {
   process.on(signal, () => {
     server.close(() => {

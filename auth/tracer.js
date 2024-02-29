@@ -5,6 +5,10 @@ const {
   getNodeAutoInstrumentations,
 } = require("@opentelemetry/auto-instrumentations-node");
 
+const {
+  ExpressInstrumentation,
+} = require("@opentelemetry/instrumentation-express");
+
 const { Resource } = require("@opentelemetry/resources");
 const {
   SemanticResourceAttributes,
@@ -12,6 +16,10 @@ const {
 const { JaegerExporter } = require("@opentelemetry/exporter-jaeger");
 
 const { PrismaInstrumentation } = require("@prisma/instrumentation");
+
+const { PgInstrumentation } = require("@opentelemetry/instrumentation-pg");
+
+const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
 
 const tracer = (serviceName) => {
   const traceExporter = new JaegerExporter({
@@ -30,9 +38,15 @@ const tracer = (serviceName) => {
       //   "@opentelemetry/instrumentation-fs": {
       //     enabled: false,
       //   },
+      //   "@opentelemetry/instrumentation-express": {
+      //     enabled: true,
+      //   },
       // }),
 
       new PrismaInstrumentation(),
+      new ExpressInstrumentation(),
+      new HttpInstrumentation()
+      
     ],
     resource: new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: serviceName,
