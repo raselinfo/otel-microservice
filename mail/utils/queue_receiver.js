@@ -2,6 +2,7 @@ const amqp = require("amqplib");
 const { queue_url } = require("../config/config");
 const prisma = require("./prisma");
 const nodemailer = require("nodemailer");
+const { trace, propagation, context } = require("@opentelemetry/api");
 
 const receiveFromQueue = async (queue, exchange, callback) => {
   console.log(queue_url, queue);
@@ -28,41 +29,62 @@ const receiveFromQueue = async (queue, exchange, callback) => {
 };
 
 receiveFromQueue("send-mail", "mail", async (message) => {
-  console.log("Received Mail: ", message);
-  const parsedBody = JSON.parse(message);
+  // const ctx = propagation.extract(context.active(), req.headers);
+  // console.log("Context", trace.getSpan(ctx)?.spanContext());
 
-  const { email, verificationCode } = parsedBody;
+  const tracer = trace.getTracer("getUserByIdController");
 
-  // Create a transporter
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-  });
+  // const span = tracer.startSpan(
+  //   "Send Mail By RabbitMQ",
+  //   {
+  //     attributes: {
+  //       "http.method": "GET",
+  //       "http.url": req.url,
+  //     },
+  //   },
+  //   ctx
+  // );
 
-  // Create mail options
-  const mailOptions = {
-    from: process.env.MAIL_FROM,
-    to: email,
-    subject: "Email Verification",
-    html: `Thank you for signing up. Please verify your email with the following code: ${verificationCode}`,
-  };
+  tracer.startActiveSpan("Send Mail By RabbitMQ", async (span) => {
+    console.log("Span", span.spanContext().traceId);
 
-  // send mail
-  const { rejected } = await transporter.sendMail(mailOptions);
+    // console.log("Received Mail: ", message);
+    const parsedBody = JSON.parse(message);
 
-  if (rejected.length) {
-    console.log("Email rejected: ", rejected);
-    return;
-  }
+    const { email, verificationCode } = parsedBody;
 
-  const mail = await prisma.mail.create({
-    data: {
+    // Create a transporter
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+    });
+
+    // Create mail options
+    const mailOptions = {
       from: process.env.MAIL_FROM,
       to: email,
       subject: "Email Verification",
-      body: `Thank you for signing up. Please verify your email with the following code: ${verificationCode}`,
-    },
-  });
+      html: `Thank you for signing up. Please verify your email with the following code: ${verificationCode}`,
+    };
 
-  console.log("Email sent", mail);
+    // send mail
+    const { rejected } = await transporter.sendMail(mailOptions);
+
+    if (rejected.length) {
+      console.log("Email rejected: ", rejected);
+      return;
+    }
+
+    const mail = await prisma.mail.create({
+      data: {
+        from: process.env.MAIL_FROM,
+        to: email,
+        subject: "Email Verification",
+        body: `Thank you for signing up. Please verify your email with the following code: ${verificationCode}`,
+      },
+    });
+
+    // console.log("Email sent", mail);
+    span.end();
+  });
 });
