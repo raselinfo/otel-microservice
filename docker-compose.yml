@@ -46,7 +46,7 @@ services:
       - practical-ms
     restart: on-failure
     depends_on:
-      - auth-db
+      - db
 
   auth:
     build:
@@ -88,7 +88,7 @@ services:
       - practical-ms
     restart: on-failure
     depends_on:
-      - user-db
+      - db
 
   user:
     build:
@@ -127,6 +127,7 @@ services:
     depends_on:
       - db
 
+
   catalog:
     build:
       context: ./catalog
@@ -151,8 +152,9 @@ services:
     networks:
       - practical-ms
 
+
   # Inventory Service and postgress database ------------------------------
-    inventory-prepare:
+  inventory-prepare:
     build:
       context: ./inventory
       dockerfile: Dockerfile
@@ -170,7 +172,7 @@ services:
     build:
       context: ./inventory
       dockerfile: Dockerfile
-    command: npx prisma migrate dev --name init
+    # command: npx prisma migrate dev --name init
     image: inventory
     container_name: inventory
     restart: on-failure
@@ -286,7 +288,7 @@ services:
     build:
       context: ./order
       dockerfile: Dockerfile
-    command: npx prisma migrate dev --name init
+    # command: npx prisma migrate dev --name init
     image: order
     container_name: order
     restart: on-failure
