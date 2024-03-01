@@ -5,8 +5,25 @@ const express = require("express");
 const cors = require("cors");
 const cartRoutes = require("../routes/cartRoutes");
 const errorMiddleware = require("../middlewares/errorMiddleware");
+const { trace, context } = require("@opentelemetry/api");
 
 const app = express();
+
+app.use((req, res, next) => {
+  const tracer = trace.getTracer("cart-service-tracer");
+  const span = tracer.startSpan("cart-service-span");
+  const traceId = span.spanContext().traceId;
+
+  span.setAttribute("traceId 💖", traceId);
+  span.setAttribute("http.method 💖", req.method);
+
+  span.setAttribute("http.url 💖", req.url);
+  
+  context.with(trace.setSpan(context.active(), span), () => {
+    next();
+  });
+});
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

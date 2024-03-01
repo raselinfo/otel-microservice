@@ -79,20 +79,20 @@ const signUpController = async (req, res, next) => {
     // );
     // console.log(existingUser);
 
-    // Set user in span
-    parentSpan.setAttribute("user", JSON.stringify(user));
-    parentSpan.setStatus({ code: SpanStatusCode.OK });
-
     res.status(201).json({
       message: "Please verify your email!",
       user,
       traceId,
     });
+
+    // Set user in span
+    parentSpan.setAttribute("user", JSON.stringify(user));
+    parentSpan.setStatus({ code: SpanStatusCode.OK });
   } catch (err) {
     const error = CustomError.severError(err, err.status);
     next({ traceId, ...error });
     // Set error in span
-    parentSpan.recordException(err);
+    parentSpan.recordException(error);
     parentSpan.setStatus({ code: SpanStatusCode.ERROR });
     parentSpan.setAttribute("user-email", req.body.email);
   } finally {
