@@ -6,7 +6,7 @@ const checkoutController = require("../controllers/checkoutController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 // Add to cart
-router.post("/cart/items", addToCartController);
+router.post("/cart/add-to-cart", addToCartController);
 
 // Checkout
 router.post("/cart/checkout", authMiddleware, checkoutController);

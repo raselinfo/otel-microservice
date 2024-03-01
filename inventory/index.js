@@ -1,3 +1,6 @@
+const tracer=require("./utils/tracer")
+const {sdk}=tracer("inventory-service")
+
 const app = require("./app");
 const RedisClient = require("./utils/redis_client");
 const updateInventoryForCustomerService = require("./services/updateInventoryForCustomerService");
@@ -31,4 +34,33 @@ app.listen(PORT, () => {
       resetInventoryService(cartKey);
     },
   });
+});
+
+
+
+
+// TODO: Shutdown the server gracefully
+const graceFullShutdown = async (signal) => {
+  process.on(signal, () => {
+    server.close(() => {
+      // TODO: Shutdown the tracer
+      sdk
+        .shutdown()
+        .then(() => {
+          // TODO: Send log data to your logging system
+          console.log("Tracing Terminated Successfully");
+        })
+        .catch((err) => {
+          // TODO: Send log data to your logging system
+          console.log("Error in Tracing Termination", err);
+        })
+        .finally(() => process.exit(0));
+    });
+  });
+};
+
+const signals = ["SIGTERM", "SIGINT", "SIGQUIT"];
+
+signals.forEach((signal) => {
+  graceFullShutdown(signal);
 });
