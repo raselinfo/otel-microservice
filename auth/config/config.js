@@ -13,4 +13,5 @@ module.exports = {
   mail_service_url: process.env.MAIL_SERVICE_URL,
   auth_service_url: process.env.AUTH_SERVICE_URL,
   email_from: process.env.EMAIL_FROM,
+  amqp_url: process.env.AMQP_URL,
 };

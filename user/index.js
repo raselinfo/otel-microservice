@@ -1,10 +1,9 @@
-const tracer = require("./tracer");
+const tracer = require("./utils/tracer");
 // Initialize the tracer
 const { sdk } = tracer("user-service");
 
 const config = require("./config/config");
 const opentelemetry = require("@opentelemetry/api");
-
 
 const app = require("./app");
 const PORT = config.port || 4000;

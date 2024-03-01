@@ -1,3 +1,4 @@
+require("../utils/queue_receiver")
 const express = require("express");
 const cors = require("cors");
 const mailRoutes = require("../routes/mailRoutes");

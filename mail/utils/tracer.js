@@ -1,12 +1,13 @@
-const config = require("./config/config");
+const config = require("../config/config");
 
 const { NodeSDK } = require("@opentelemetry/sdk-node");
 const {
   getNodeAutoInstrumentations,
 } = require("@opentelemetry/auto-instrumentations-node");
 
-const {ExpressInstrumentation}= require("@opentelemetry/instrumentation-express")
-
+const {
+  ExpressInstrumentation,
+} = require("@opentelemetry/instrumentation-express");
 
 const { Resource } = require("@opentelemetry/resources");
 const {
@@ -14,6 +15,14 @@ const {
 } = require("@opentelemetry/semantic-conventions");
 const { JaegerExporter } = require("@opentelemetry/exporter-jaeger");
 
+const { HttpInstrumentation } = require("@opentelemetry/instrumentation-http");
+
+const {
+  IORedisInstrumentation,
+} = require("@opentelemetry/instrumentation-ioredis");
+const {
+  AmqplibInstrumentation,
+} = require("@opentelemetry/instrumentation-amqplib");
 
 const tracer = (serviceName) => {
   const traceExporter = new JaegerExporter({
@@ -39,7 +48,10 @@ const tracer = (serviceName) => {
 
       // new PrismaInstrumentation(),
 
-      new ExpressInstrumentation()
+      new ExpressInstrumentation(),
+      new HttpInstrumentation(),
+      new IORedisInstrumentation(),
+      new AmqplibInstrumentation(),
     ],
     resource: new Resource({
       [SemanticResourceAttributes.SERVICE_NAME]: serviceName,

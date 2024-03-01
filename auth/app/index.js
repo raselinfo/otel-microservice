@@ -21,13 +21,9 @@ app.use((req, res, next) => {
 
   span.setAttribute("http.url 💖", req.url);
 
-
   opentelemetry.context.with(
     opentelemetry.trace.setSpan(opentelemetry.context.active(), span),
     () => {
-      // req.on("end", () => {
-      //   span.end();
-      // });
       next();
     }
   );

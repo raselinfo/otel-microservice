@@ -1,4 +1,4 @@
-const tracer = require("./tracer");
+const tracer = require("./utils/tracer");
 // Initialize the tracer
 const { sdk } = tracer("auth-service");
 

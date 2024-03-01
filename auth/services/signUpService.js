@@ -2,6 +2,7 @@ const axios = require("axios");
 const prisma = require("../utils/prisma");
 const Password = require("../utils/Password");
 const config = require("../config/config");
+const sendToQueue = require("../utils/queue");
 
 const { httpContextPropagation } = require("../utils/otel");
 
@@ -98,10 +99,20 @@ const signUpService = async (
   });
 
   // Todo: Send email to user for verification
-  emailVerification({
-    email,
-    verificationCode: verificationTable.verificationCode,
-  });
+  // emailVerification({
+  //   email,
+  //   verificationCode: verificationTable.verificationCode,
+  // });
+
+  // Todo: Send Email using RabbitMQ
+  sendToQueue(
+    "send-mail",
+    "mail",
+    JSON.stringify({
+      email,
+      verificationCode: verificationTable.verificationCode,
+    })
+  );
 
   console.log("nueUser", newUser);
 

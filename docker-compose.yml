@@ -5,6 +5,7 @@ volumes:
   redis-data: {}
   mailhog_data: {}
   prometheus: {}
+  rabbitmq_data: {}
 
 networks:
   practical-ms:
@@ -226,6 +227,15 @@ services:
     networks:
       - practical-ms
 
+# RabitMQ
+  rabbitmq:
+    image: rabbitmq:3.8-management
+    ports:
+      - "5672:5672" # RabbitMQ main port
+      - "15672:15672" # RabbitMQ management UI port
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
   # Jaeger and Prometheus
   jaeger:
     image: jaegertracing/all-in-one:latest
@@ -243,3 +253,4 @@ services:
       - ./prometheus/:/etc/prometheus/
     ports:
       - 9090:9090
+

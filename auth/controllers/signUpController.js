@@ -14,7 +14,6 @@ const joi = require("joi");
 const CustomError = require("../utils/Error");
 const prisma = require("../utils/prisma");
 const config = require("../config/config");
-const tracer = require("../tracer");
 const signUpController = async (req, res, next) => {
   const parentSpan = trace.getSpan(context.active());
   parentSpan.updateName("Sign Up Controller 🍳");
