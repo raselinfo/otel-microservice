@@ -35,24 +35,11 @@ services:
       timeout: 30s
       retries: 3
 
-  auth-prepare:
-    build:
-      context: ./auth
-      dockerfile: Dockerfile
-    command: npx prisma migrate dev --name init
-    environment:
-      DATABASE_URL: postgresql://db:db@host.docker.internal:5433/auth?schema=public
-    networks:
-      - practical-ms
-    restart: on-failure
-    depends_on:
-      - auth-db
-
   auth:
     build:
       context: ./auth
       dockerfile: Dockerfile
-    # command: npx prisma migrate dev --name init
+    command: npx prisma migrate dev --name init
     image: auth
     container_name: auth
     restart: on-failure
@@ -68,33 +55,17 @@ services:
       EMAIL_FROM: auth@stacklearner.com
     depends_on:
       - db
-      - auth-prepare
     volumes:
       - ./auth:/app
       - /app/node_modules
     networks:
       - practical-ms
 
-# User Service
-
-  user-prepare:
-    build:
-      context: ./user
-      dockerfile: Dockerfile
-    command: npx prisma migrate dev --name init
-    environment:
-      DATABASE_URL: postgresql://db:db@host.docker.internal:5433/user?schema=public
-    networks:
-      - practical-ms
-    restart: on-failure
-    depends_on:
-      - user-db
-
   user:
     build:
       context: ./user
       dockerfile: Dockerfile
-    # command: npx prisma migrate dev --name init
+    command: npx prisma migrate dev --name init
     image: user
     container_name: user
     restart: on-failure
@@ -105,7 +76,6 @@ services:
       MODE: development
     depends_on:
       - db
-      - user-prepare
     volumes:
       - ./user:/app
       - /app/node_modules
@@ -113,25 +83,11 @@ services:
       - practical-ms
 
   # catalog Service and postgress database ------------------------------
-  
-  catalog-prepare:
-    build:
-      context: ./catalog
-      dockerfile: Dockerfile
-    command: npx prisma migrate dev --name init
-    environment:
-      DATABASE_URL: postgresql://db:db@host.docker.internal:5433/catalog?schema=public
-    networks:
-      - practical-ms
-    restart: on-failure
-    depends_on:
-      - db
-
   catalog:
     build:
       context: ./catalog
       dockerfile: Dockerfile
-    # command: npx prisma migrate dev --name init
+    command: npx prisma migrate dev --name init
     image: catalog
     container_name: catalog
     restart: on-failure
@@ -144,7 +100,6 @@ services:
       AUTH_SERVICE_URL: http://host.docker.internal:4000/api/v1
     depends_on:
       - db
-      - catalog-prepare
     volumes:
       - ./catalog:/app
       - /app/node_modules
@@ -152,19 +107,6 @@ services:
       - practical-ms
 
   # Inventory Service and postgress database ------------------------------
-    inventory-prepare:
-    build:
-      context: ./inventory
-      dockerfile: Dockerfile
-    command: npx prisma migrate dev --name init
-    environment:
-      DATABASE_URL: postgresql://db:db@host.docker.internal:5433/inventory?schema=public
-      MODE: development
-    networks:
-      - practical-ms
-    restart: on-failure
-    depends_on:
-      - db
 
   inventory:
     build:
@@ -180,7 +122,6 @@ services:
       DATABASE_URL: postgresql://db:db@host.docker.internal:5433/inventory?schema=public
     depends_on:
       - db
-      - inventory-prepare
     volumes:
       - ./inventory:/app
       - /app/node_modules
@@ -240,14 +181,14 @@ services:
     build:
       context: ./cart
       dockerfile: Dockerfile
-    # command: npx prisma migrate dev --name init
+    command: npx prisma migrate dev --name init
     image: cart
     container_name: cart
     restart: on-failure
     ports:
       - "4005:4000"
     environment:
-      # DATABASE_URL: postgresql://db:db@host.docker.internal:5433/cart?schema=public
+      DATABASE_URL: postgresql://db:db@host.docker.internal:5433/cart?schema=public
       MODE: development
       REDIS_URL: redis://host.docker.internal:6379
       INVENTORY_SERVICE_URL: http://host.docker.internal:4002/api/v1
@@ -265,23 +206,6 @@ services:
       - practical-ms
 
   # Order Service
-
-  order-prepare:
-    build:
-      context: ./order
-      dockerfile: Dockerfile
-    command: npx prisma migrate dev --name init
-    environment:
-      DATABASE_URL: postgresql://db:db@host.docker.internal:5433/order?schema=public
-      MODE: development
-      MAIL_SERVICE_URL: http://host.docker.internal:4004/api/v1
-    networks:
-      - practical-ms
-    restart: on-failure
-    depends_on:
-      - db
-      - redis-stack
-
   order:
     build:
       context: ./order
@@ -297,14 +221,13 @@ services:
       MAIL_SERVICE_URL: http://host.docker.internal:4004/api/v1
     depends_on:
       - db
-      - order-prepare
     volumes:
       - ./order:/app
       - /app/node_modules
     networks:
       - practical-ms
 
-  # RabitMQ
+# RabitMQ
   rabbitmq:
     image: rabbitmq:3.8-management
     ports:
@@ -330,3 +253,4 @@ services:
       - ./prometheus/:/etc/prometheus/
     ports:
       - 9090:9090
+
