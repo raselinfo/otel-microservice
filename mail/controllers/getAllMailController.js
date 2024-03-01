@@ -8,6 +8,7 @@ const getAllMailController = async (req, res, next) => {
     res.status(200).json({ mails });
   } catch (err) {
     const error = CustomError.severError(err, err.status);
+    console.log("error", error);
     next(error);
   }
 };
